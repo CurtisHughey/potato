@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
 
+# TODO
+# Afine (get Caesar)
+# Vigenere (get Beaufort)
+# XOR
+# Playfair
+# Monoalphabetic
+# RC4
+# Transposition
+# Substitution
+
+
+
 import sys
 
 

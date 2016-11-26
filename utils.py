@@ -4,6 +4,8 @@
 
 from collections import defaultdict
 import unittest
+import scipy
+from scipy.stats import chisquare
 
 # text must be lower case (otherwise ignored!
 def rot(text, shift):
@@ -33,9 +35,14 @@ def calcFreqs(text):
             counts[c] += 1
             total += 1
 
-    freqs = defaultdict(int)
+    freqs = {}
 
     for c in counts.keys():
+        freqs[c] = counts[c] / total
+
+    lowera = ord('a')
+    for i in range(26):
+        c = chr(lowera+i)
         freqs[c] = counts[c] / total
 
     return freqs
@@ -97,5 +104,7 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(freqs['z'], 0.00074)
 
     def test_calcChiSquared(self):
-        freqs = readExpectedFreqs('englishAlphaFreqs.txt')
-        self.assertAlmostEqual(calcChiSquared('abc', freqs), 11.801833324)
+        observed = calcFreqs('abc')
+        expected = readExpectedFreqs('englishAlphaFreqs.txt')
+        (chiSquared, pVal) = chisquare(f_obs=list(observed.values()), f_exp=list(expected.values()))
+        self.assertAlmostEqual(chiSquared, 11.801833324)

@@ -5,15 +5,19 @@
 from collections import defaultdict
 import unittest
 
-# text must be lower case!
+# text must be lower case (otherwise ignored!
 def rot(text, shift):
     shiftedText = ""
 
     lowera = ord('a')
 
     for c in text:	
-        shiftedC = chr(((ord(c)-lowera+shift) % 26)+lowera)
-        shiftedText += shiftedC
+        d = ''
+        if isAlpha(c):
+            d = chr(((ord(c)-lowera+shift) % 26)+lowera)
+        else:
+            d = c
+        shiftedText += d
 
     return shiftedText
 
@@ -77,6 +81,9 @@ class UtilTest(unittest.TestCase):
         self.assertNotEqual(rot('aaa', 2), 'ddd')
         self.assertEqual(rot('zzz', 2), 'bbb')
         self.assertEqual(rot('xyz', 2), 'zab')
+        self.assertEqual(rot('a c', 2), 'c e')
+        self.assertEqual(rot('a1c', 2), 'c1e')
+        self.assertEqual(rot('aAc', 2), 'cAe')
 
     def test_calcFreqs(self):
         freqs = calcFreqs('abca')

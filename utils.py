@@ -6,6 +6,7 @@ from collections import defaultdict
 import unittest
 import scipy
 from scipy.stats import chisquare
+from scipy.stats import chisqprob
 
 # text must be lower case (otherwise ignored!
 def rot(text, shift):
@@ -37,19 +38,17 @@ def calcFreqs(text):
 
     freqs = {}
 
-    for c in counts.keys():
-        freqs[c] = counts[c] / total
-
     lowera = ord('a')
     for i in range(26):
         c = chr(lowera+i)
         freqs[c] = counts[c] / total
 
-    return freqs
+    return (freqs, total)
 
 
-def calcChiSquared(text, expectedFreqs):
-    actualFreqs = calcFreqs(text)
+def calcChiSquared(text):
+    expectedFreqs = readExpectedFreqs('englishAlphaFreqs.txt')
+    actualFreqs, total = calcFreqs(text)
 
     chiSquared = 0.0
 
@@ -58,7 +57,15 @@ def calcChiSquared(text, expectedFreqs):
         c = chr(lowera+i)
         chiSquared += ((actualFreqs[c]-expectedFreqs[c])**2) / expectedFreqs[c]
 
+    chiSquared *= total  # Really, all the freqs above should've been multiplied by total, but this works out the same
+
     return chiSquared
+
+# This doesn't currently work...
+def isPlaintextWithConfidence(text, pVal):
+    chi2 = calcChiSquared(text)
+    print(chisqprob(chi2, 25))
+    return chisqprob(chi2, 25) < pVal
 
 def readExpectedFreqs(filename):
     with open(filename, 'r') as f:
@@ -93,7 +100,7 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(rot('aAc', 2), 'cAe')
 
     def test_calcFreqs(self):
-        freqs = calcFreqs('abca')
+        freqs, _ = calcFreqs('abca')
         self.assertAlmostEqual(freqs['a'], 0.5)
         self.assertAlmostEqual(freqs['b'], 0.25)
         self.assertAlmostEqual(freqs['z'], 0.0)
@@ -104,7 +111,11 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(freqs['z'], 0.00074)
 
     def test_calcChiSquared(self):
-        observed = calcFreqs('abc')
-        expected = readExpectedFreqs('englishAlphaFreqs.txt')
-        (chiSquared, pVal) = chisquare(f_obs=list(observed.values()), f_exp=list(expected.values()))
-        self.assertAlmostEqual(chiSquared, 11.801833324)
+        x2 = calcChiSquared('this should be a valid english text, and so the p value should be fairly low, hopefully.')
+        self.assertAlmostEqual(x2, 39.515306094)
+
+        x2 = calcChiSquared('abcdefghijklmnopqrstuvwxyz')
+        self.assertAlmostEqual(x2, 148.894749139)
+        
+
+

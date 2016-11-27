@@ -3,6 +3,7 @@
 import utils
 import cipher
 import unittest
+import fractions
 
 class Affine(cipher.AbstractCipher):
 
@@ -37,11 +38,25 @@ class Affine(cipher.AbstractCipher):
 		return decrypted		
 
 	def crack(text):
-		pass
+		key = (1,1)
+		lowestChi2 = 100000  # Just a big number 
+
+		for a in range(1, utils.ALPHABET_SIZE):
+			if fractions.gcd(a, utils.ALPHABET_SIZE) == 1:
+				for b in range(1, utils.ALPHABET_SIZE):
+					decrypted = Affine.decrypt(text,(a,b))
+					chi2 = utils.calcChiSquared(decrypted)
+
+					if chi2 < lowestChi2:
+						key = (a,b)
+						lowestChi2 = chi2
+
+
+		return (key, lowestChi2)
 
 	def usage():
 		print('Key is in the form (a,b), where 1<=a<utils.ALPHABET_SIZE,')
-		print('1<=b<utils.ALPHABET_SIZE, and gcd(a, utils.ALPHABET_SIZE=1')
+		print('0<=b<utils.ALPHABET_SIZE, and gcd(a, utils.ALPHABET_SIZE=1')
 
 
 class AffineTest(unittest.TestCase):
@@ -62,4 +77,9 @@ class AffineTest(unittest.TestCase):
 		self.assertEqual(Affine.encrypt(Affine.decrypt('random text hi there! zzz', (7,13)), (7,13)), 'random text hi there! zzz')
 
 	def test_crack(self):
-		pass
+		ciphertext = 'lrekmepqocpcboygywppehfiwpfzyqgdzergypwfywecyojeqcmyegfgypwfcymjyfgfmfgwpqgdzergpgffzeyciedbcgpfehfbefferqcpjeepqrodfexfwcpowpewlyetercbxgllerepfqgdzerfehfbefferyxedepxgpswpgfydwygfgwpgpfzeieyycse'
+		plaintext = 'frequencyanalysisonnextmonthscipherisnotsoeasybecauseitisnotasubstitutioncipherinitthesameplaintextlettercanbeencryptedtoanyoneofseveraldifferentciphertextlettersdependingonitspositioninthemessage'
+		(key, _) = Affine.crack(ciphertext)
+
+		maybePlaintext = Affine.decrypt(ciphertext, key)
+		self.assertEqual(plaintext, maybePlaintext)

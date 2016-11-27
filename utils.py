@@ -8,6 +8,8 @@ import scipy
 from scipy.stats import chisquare
 from scipy.stats import chisqprob
 
+ALPHABET_SIZE = 26
+
 # text must be lower case (otherwise ignored!
 def rot(text, shift):
     shiftedText = ""
@@ -17,7 +19,7 @@ def rot(text, shift):
     for c in text:	
         d = ''
         if isAlpha(c):
-            d = chr(((ord(c)-lowera+shift) % 26)+lowera)
+            d = chr(((ord(c)-lowera+shift) % ALPHABET_SIZE)+lowera)
         else:
             d = c
         shiftedText += d
@@ -39,33 +41,11 @@ def calcFreqs(text):
     freqs = {}
 
     lowera = ord('a')
-    for i in range(26):
+    for i in range(ALPHABET_SIZE):
         c = chr(lowera+i)
         freqs[c] = counts[c] / total
 
     return (freqs, total)
-
-
-def calcChiSquared(text):
-    expectedFreqs = readExpectedFreqs('englishAlphaFreqs.txt')
-    actualFreqs, total = calcFreqs(text)
-
-    chiSquared = 0.0
-
-    lowera = ord('a')
-    for i in range(26):
-        c = chr(lowera+i)
-        chiSquared += ((actualFreqs[c]-expectedFreqs[c])**2) / expectedFreqs[c]
-
-    chiSquared *= total  # Really, all the freqs above should've been multiplied by total, but this works out the same
-
-    return chiSquared
-
-# This doesn't currently work...
-def isPlaintextWithConfidence(text, pVal):
-    chi2 = calcChiSquared(text)
-    print(chisqprob(chi2, 25))
-    return chisqprob(chi2, 25) < pVal
 
 def readExpectedFreqs(filename):
     with open(filename, 'r') as f:
@@ -80,6 +60,46 @@ def readExpectedFreqs(filename):
             freqs[c] = freq
 
         return freqs
+
+def calcChiSquared(text):
+    expectedFreqs = readExpectedFreqs('englishAlphaFreqs.txt')
+    actualFreqs, total = calcFreqs(text)
+
+    chiSquared = 0.0
+
+    lowera = ord('a')
+    for i in range(ALPHABET_SIZE):
+        c = chr(lowera+i)
+        chiSquared += ((actualFreqs[c]-expectedFreqs[c])**2) / expectedFreqs[c]
+
+    chiSquared *= total  # Really, all the freqs above should've been multiplied by total, but this works out the same
+
+    return chiSquared
+
+# This doesn't currently work...
+def isPlaintextWithConfidence(text, pVal):
+    chi2 = calcChiSquared(text)
+    print(chisqprob(chi2, ALPHABET_SIZE-1))
+    return chisqprob(chi2, ALPHABET_SIZE-1) < pVal
+
+# Copied from Wikipedia
+def multInverse(a, n):
+    t = 0 
+    r = n
+    newt = 1
+    newr = a
+
+    while newr != 0:
+        quotient = r // newr
+        (t, newt) = (newt, t-quotient*newt)
+        (r, newr) = (newr, r-quotient*newr)
+
+    if r > 1:
+        raise ValueError('%d^-1 mod %d cannot be found' % (a,n))
+    if t < 0:
+        t = t+n
+
+    return t
 
 class UtilTest(unittest.TestCase):
     def test_isAlpha(self):
@@ -108,7 +128,7 @@ class UtilTest(unittest.TestCase):
     def test_readExpectedFreqs(self):
         freqs = readExpectedFreqs('englishAlphaFreqs.txt')
         self.assertEqual(freqs['c'], 0.02782)
-        self.assertEqual(freqs['z'], 0.00074)
+        self.assertEqual(freqs['z'], 0.00074)        
 
     def test_calcChiSquared(self):
         x2 = calcChiSquared('this should be a valid english text, and so the p value should be fairly low, hopefully.')
@@ -116,6 +136,11 @@ class UtilTest(unittest.TestCase):
 
         x2 = calcChiSquared('abcdefghijklmnopqrstuvwxyz')
         self.assertAlmostEqual(x2, 148.894749139)
-        
 
+    def test_multInverse(self):
+        self.assertEqual(multInverse(7,26), 15)
+        self.assertEqual(multInverse(8953851,26), 17)
+        self.assertEqual(multInverse(1,26), 1)
+        with self.assertRaises(ValueError):
+            multInverse(13,26)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # TODO
-# Afine (get Caesar)
+# Affine (get Caesar)
 # Vigenere (get Beaufort)
 # XOR
 # Playfair

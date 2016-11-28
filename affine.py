@@ -54,6 +54,18 @@ class Affine(cipher.AbstractCipher):
 
 		return (key, lowestChi2)
 
+	def getNameOfCipher(key=None):
+		if key == None:
+			return 'Affine'
+
+		(a,b) = key
+		if a == 25 and b == 25:
+			return 'Atbash (Affine)'
+		elif a == 1:
+			return 'Caesar (Affine)'
+		else:
+			return 'Affine'
+
 	def usage():
 		print('Key is in the form (a,b), where 1<=a<utils.ALPHABET_SIZE,')
 		print('0<=b<utils.ALPHABET_SIZE, and gcd(a, utils.ALPHABET_SIZE=1')

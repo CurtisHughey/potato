@@ -27,3 +27,9 @@ class AbstractCipher(ABC):
 	def usage():
 		"""Prints usage of cipher, usually describing the key"""
 		pass
+
+	@staticmethod
+	@abstractmethod
+	def getNameOfCipher(key=None):
+		"""Returns the name of the cipher.  If the key is provided, it will try to be more specific"""
+		pass

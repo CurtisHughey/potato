@@ -12,12 +12,14 @@
 
 import sys
 import getopt
+import nothing
 import affine
 import vigenere
 
  # Would be cool to dynamically update this list
 ciphers = [
-            affine.Affine
+            nothing.Nothing
+          , affine.Affine
           , vigenere.Vigenere
           ] 
 
@@ -49,6 +51,7 @@ def usage():
 
 
 # Eventually, I'll have to do something in case the entered text is all caps^^^
+# Unit test...^^^
 def findCipherAndDecrypt(ciphertext):
 
     lowestChi2 = 100000

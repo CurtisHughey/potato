@@ -43,7 +43,11 @@ def calcFreqs(text):
     lowera = ord('a')
     for i in range(ALPHABET_SIZE):
         c = chr(lowera+i)
-        freqs[c] = counts[c] / total
+
+        if total == 0:
+            freqs[c] = 0
+        else:
+            freqs[c] = counts[c] / total
 
     return (freqs, total)
 

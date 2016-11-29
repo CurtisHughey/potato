@@ -44,8 +44,8 @@ class Affine(cipher.AbstractCipher):
 		for a in range(1, utils.ALPHABET_SIZE):
 			if fractions.gcd(a, utils.ALPHABET_SIZE) == 1:
 				for b in range(1, utils.ALPHABET_SIZE):
-					decrypted = Affine.decrypt(ciphertext,(a,b))
-					chi2 = utils.calcChiSquared(decrypted)
+					maybePlaintext = Affine.decrypt(ciphertext,(a,b))
+					chi2 = utils.calcChiSquared(maybePlaintext)
 
 					if chi2 < lowestChi2:
 						key = (a,b)

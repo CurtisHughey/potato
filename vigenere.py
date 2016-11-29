@@ -62,7 +62,7 @@ class Vigenere(cipher.AbstractCipher):
 			lowestShift = 0
 			lowestChi2 = 100000
 
-			for j in range(utils.ALPHABET_SIZE):
+			for j in range(min(utils.ALPHABET_SIZE, len(ciphertext))):
 				maybePlaintext = Vigenere.rot(subtext, j)
 				chi2 = utils.calcChiSquared(maybePlaintext)
 				if chi2 < lowestChi2:

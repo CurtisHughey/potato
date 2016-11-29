@@ -7,44 +7,44 @@ import fractions
 
 class Affine(cipher.AbstractCipher):
 
-	def encrypt(text, key):
+	def encrypt(plaintext, key):
 		(a,b) = key
-		encrypted = ''
+		ciphertext = ''
 
 		lowera = ord('a')
-		for c in text:
+		for c in plaintext:
 			if utils.isAlpha(c):
 				x = ord(c)-lowera
 				y = (a*x+b) % utils.ALPHABET_SIZE
-				encrypted += chr(lowera+y)
+				ciphertext += chr(lowera+y)
 			else:
-				encrypted += c
+				ciphertext += c
 
-		return encrypted
+		return ciphertext
 
-	def decrypt(text, key):
+	def decrypt(ciphertext, key):
 		(a,b) = key
-		decrypted = ''
+		plaintext = ''
 
 		lowera = ord('a')
-		for c in text:
+		for c in ciphertext:
 			if utils.isAlpha(c):
 				x = ord(c)-lowera
 				y = (utils.multInverse(a, utils.ALPHABET_SIZE)*(x-b)) % utils.ALPHABET_SIZE
-				decrypted += chr(lowera+y)
+				plaintext += chr(lowera+y)
 			else:
-				decrypted += c
+				plaintext += c
 
-		return decrypted		
+		return plaintext		
 
-	def crack(text):
+	def crack(ciphertext):
 		key = (1,1)
 		lowestChi2 = 100000  # Just a big number 
 
 		for a in range(1, utils.ALPHABET_SIZE):
 			if fractions.gcd(a, utils.ALPHABET_SIZE) == 1:
 				for b in range(1, utils.ALPHABET_SIZE):
-					decrypted = Affine.decrypt(text,(a,b))
+					decrypted = Affine.decrypt(ciphertext,(a,b))
 					chi2 = utils.calcChiSquared(decrypted)
 
 					if chi2 < lowestChi2:
@@ -62,7 +62,10 @@ class Affine(cipher.AbstractCipher):
 		if a == 25 and b == 25:
 			return 'Atbash (Affine)'
 		elif a == 1:
-			return 'Caesar (Affine)'
+			if b == 13:
+				return 'Rot13 (Caesar (Affine))'
+			else:
+				return 'Caesar (Affine)'
 		else:
 			return 'Affine'
 

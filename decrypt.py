@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 # TODO
-# Affine (get Caesar, Atbash)
 # Vigenere (get Beaufort)
 # XOR
 # Playfair
@@ -11,10 +10,16 @@
 # Substitution
 
 
-import sys, getopt
+import sys
+import getopt
 import affine
+import vigenere
 
-ciphers = [affine.Affine]  # Would be cool to dynamically update this list
+ # Would be cool to dynamically update this list
+ciphers = [
+            affine.Affine
+          , vigenere.Vigenere
+          ] 
 
 def main(argv):
     ciphertext = ''
@@ -42,6 +47,8 @@ def main(argv):
 def usage():
     print('Usage: ./decrypt.py -c <ciphertext>')
 
+
+# Eventually, I'll have to do something in case the entered text is all caps^^^
 def findCipherAndDecrypt(ciphertext):
 
     lowestChi2 = 100000

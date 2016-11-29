@@ -6,19 +6,19 @@ class AbstractCipher(ABC):
 
 	@staticmethod
 	@abstractmethod
-	def encrypt(text, key):
+	def encrypt(plaintext, key):
 		"""Encrypts text given key"""
 		pass
 
 	@staticmethod
 	@abstractmethod
-	def decrypt(text, key):
+	def decrypt(ciphertext, key):
 		"""Decrypts text given key"""
 		pass
 
 	@staticmethod
 	@abstractmethod
-	def crack(text):
+	def crack(ciphertext):
 		"""Given text, it returns the most likely key and chi-square associated with it as a tuple"""
 		pass
 

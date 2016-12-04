@@ -37,7 +37,7 @@ class Affine(cipher.AbstractBruteForceCipher):
 
 		return plaintext	
 
-	def genKeys():
+	def genKeys():  # Can't really unit test this effectively...
 		for a in range(1, utils.ALPHABET_SIZE):
 			if fractions.gcd(a, utils.ALPHABET_SIZE) == 1:
 				for b in range(1, utils.ALPHABET_SIZE):
@@ -109,4 +109,3 @@ class AffineTest(unittest.TestCase):
 		maybePlaintext = Affine.decrypt(ciphertext, key)
 		self.assertEqual(key, (utils.ALPHABET_SIZE-1,utils.ALPHABET_SIZE-1))				
 		self.assertEqual(plaintext, maybePlaintext)
-		

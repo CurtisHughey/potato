@@ -4,12 +4,12 @@ import utils
 import cipher
 import unittest
 
-KEY_LENGTH_UPPER_BOUND = 20  # Unlikely that higher? ^^^  Could have problems with repeated...
+KEY_LENGTH_UPPER_BOUND = 20  # Unlikely that higher? ^^^ 
 
 
 class Vigenere(cipher.AbstractCipher):
 
-	def encrypt(plaintext, key):
+	def encrypt(self, plaintext, key):
 		ciphertext = ''
 
 		lowera = ord('a')
@@ -26,7 +26,7 @@ class Vigenere(cipher.AbstractCipher):
 
 		return ciphertext
 
-	def decrypt(ciphertext, key):
+	def decrypt(self, ciphertext, key):
 		plaintext = ''
 
 		lowera = ord('a')
@@ -43,8 +43,8 @@ class Vigenere(cipher.AbstractCipher):
 
 		return plaintext
 
-	def crack(ciphertext):
-		keyLen = Vigenere.findKeyLength(ciphertext, KEY_LENGTH_UPPER_BOUND)
+	def crack(self, ciphertext):
+		keyLen = self.findKeyLength(ciphertext, KEY_LENGTH_UPPER_BOUND)
 
 		key = ''
 		lowera = ord('a')
@@ -63,7 +63,7 @@ class Vigenere(cipher.AbstractCipher):
 			lowestChi2 = 100000
 
 			for j in range(min(utils.ALPHABET_SIZE, len(ciphertext))):
-				maybePlaintext = Vigenere.rot(subtext, j)
+				maybePlaintext = self.rot(subtext, j)
 				chi2 = utils.calcChiSquared(maybePlaintext)
 				if chi2 < lowestChi2:
 					lowestShift = j
@@ -75,15 +75,15 @@ class Vigenere(cipher.AbstractCipher):
 
 			key += chr(keyShift+lowera)
 
-		key = Vigenere.refineKey(key)
+		key = self.refineKey(key)
 
-		plaintext = Vigenere.decrypt(ciphertext, key)
+		plaintext = self.decrypt(ciphertext, key)
 		chi2 = utils.calcChiSquared(plaintext)
 
 		return (key, chi2)
 
 	# It's possible that we found the key to be lemonlemon, but really it should just be lemon.  This function refines it
-	def refineKey(maybeRepeatKey):
+	def refineKey(self, maybeRepeatKey):
 		length = len(maybeRepeatKey)
 
 		for i in range(1, length):
@@ -93,14 +93,14 @@ class Vigenere(cipher.AbstractCipher):
 
 		return maybeRepeatKey  # No refining possible
 
-	def findKeyLength(ciphertext, keyLengthUpperBound):
+	def findKeyLength(self, ciphertext, keyLengthUpperBound):
 		highestIOC = -1.0  # Highest index of coincidence found so far
 		shiftForHighest = 1
 
 		for i in range(1,keyLengthUpperBound):
-			shiftedString = Vigenere.shiftString(ciphertext, i)
+			shiftedString = self.shiftString(ciphertext, i)
 
-			indexOfCoincidence = Vigenere.calcIndexOfCoincidence(ciphertext, shiftedString)
+			indexOfCoincidence = self.calcIndexOfCoincidence(ciphertext, shiftedString)
 
 			if indexOfCoincidence > highestIOC:
 				highestIOC = indexOfCoincidence
@@ -109,7 +109,7 @@ class Vigenere(cipher.AbstractCipher):
 		return shiftForHighest   # This shift gave the highest COI, which implies that it's the keylength
 
 	# Calculates how many times the lined up characters of the two texts match, then uses the index of coincidence formula
-	def calcIndexOfCoincidence(text1, text2):
+	def calcIndexOfCoincidence(self, text1, text2):
 		numOccurs = {}  # Dictionary mapping alphabet chars to number of times it matches in the two texts
 		for i in range(len(text1)):
 			c = text1[i]
@@ -127,11 +127,11 @@ class Vigenere(cipher.AbstractCipher):
 
 
 	# This is not rot.  It sends the ith character to the (i+shift)th spot, module len(str)
-	def shiftString(inStr, shift):
+	def shiftString(self, inStr, shift):
 		shift = shift % len(inStr)  # in case shift is greater (shouldn't be)
 		return inStr[-shift:]+inStr[:-shift] 
 
-	def rot(plaintext, shift):
+	def rot(self, plaintext, shift):
 		ciphertext = ''
 
 		lowera = ord('a')
@@ -143,89 +143,92 @@ class Vigenere(cipher.AbstractCipher):
 
 		return ciphertext
 
-	def getNameOfCipher(key=None):
+	def getNameOfCipher(self, key=None):
 		if len(key) == 1:
 			return 'Caesar (Vigenere)'  # Should technically also handle rot13
 		else:
 			return 'Vigenere'
 
-	def usage():
+	def usage(self):
 		print('Key must be a lower-case string')
 
 
 class VigenereTest(unittest.TestCase):
 
+	def setUp(self):
+		self.vigenereInstance = Vigenere()
+
 	def test_encrypt(self):
 		plaintext = 'abcde'
-		self.assertEqual(Vigenere.encrypt(plaintext, 'b'), 'bcdef')
+		self.assertEqual(self.vigenereInstance.encrypt(plaintext, 'b'), 'bcdef')
 
 		plaintext = 'abcde'
-		self.assertEqual(Vigenere.encrypt(plaintext, 'a'), 'abcde')
+		self.assertEqual(self.vigenereInstance.encrypt(plaintext, 'a'), 'abcde')
 
 		plaintext = 'wxyza'
-		self.assertEqual(Vigenere.encrypt(plaintext, 'b'), 'xyzab')
+		self.assertEqual(self.vigenereInstance.encrypt(plaintext, 'b'), 'xyzab')
 
 		plaintext = 'a c'
-		self.assertEqual(Vigenere.encrypt(plaintext, 'b'), 'b d')
+		self.assertEqual(self.vigenereInstance.encrypt(plaintext, 'b'), 'b d')
 
 		plaintext = 'to be or not to be that is the question'
-		self.assertEqual(Vigenere.encrypt(plaintext, 'relations'), 'ks me hz bbl ks me mpog aj xse jcsflzsy')
+		self.assertEqual(self.vigenereInstance.encrypt(plaintext, 'relations'), 'ks me hz bbl ks me mpog aj xse jcsflzsy')
 
 	def test_decrypt(self):
 		ciphertext = 'bcdef'
-		self.assertEqual(Vigenere.decrypt(ciphertext, 'b'), 'abcde')
+		self.assertEqual(self.vigenereInstance.decrypt(ciphertext, 'b'), 'abcde')
 
 		ciphertext = 'abcde'
-		self.assertEqual(Vigenere.decrypt(ciphertext, 'a'), 'abcde')
+		self.assertEqual(self.vigenereInstance.decrypt(ciphertext, 'a'), 'abcde')
 
 		ciphertext = 'xyzab'
-		self.assertEqual(Vigenere.decrypt(ciphertext, 'b'), 'wxyza')
+		self.assertEqual(self.vigenereInstance.decrypt(ciphertext, 'b'), 'wxyza')
 
 		ciphertext = 'b d'
-		self.assertEqual(Vigenere.decrypt(ciphertext, 'b'), 'a c')
+		self.assertEqual(self.vigenereInstance.decrypt(ciphertext, 'b'), 'a c')
 
 		ciphertext = 'ks me hz bbl ks me mpog aj xse jcsflzsy'
-		self.assertEqual(Vigenere.decrypt(ciphertext, 'relations'), 'to be or not to be that is the question')
+		self.assertEqual(self.vigenereInstance.decrypt(ciphertext, 'relations'), 'to be or not to be that is the question')
 
 	def test_identity(self):
 		text = 'hello there!'
 		key = 'key'
 
-		self.assertEqual(Vigenere.decrypt(Vigenere.encrypt(text, key), key), text)
+		self.assertEqual(self.vigenereInstance.decrypt(self.vigenereInstance.encrypt(text, key), key), text)
 
-		self.assertEqual(Vigenere.encrypt(Vigenere.decrypt(text, key), key), text)
+		self.assertEqual(self.vigenereInstance.encrypt(self.vigenereInstance.decrypt(text, key), key), text)
 
 	def test_calcIndexOfCoincidence(self):
 		text1 = 'abcdefgab'
 		text2 = 'abcjgfaab'
 
-		self.assertAlmostEqual(Vigenere.calcIndexOfCoincidence(text1, text2), 1.444444444)
+		self.assertAlmostEqual(self.vigenereInstance.calcIndexOfCoincidence(text1, text2), 1.444444444)
 
 	def test_shiftString(self):
 		text1 = 'abcdefgh'
 		text2 = 'ghabcdef'
 
-		self.assertEqual(Vigenere.shiftString(text1, 2), text2)
-		self.assertEqual(Vigenere.shiftString(text1, 0), text1)
+		self.assertEqual(self.vigenereInstance.shiftString(text1, 2), text2)
+		self.assertEqual(self.vigenereInstance.shiftString(text1, 0), text1)
 
 	def test_rot(self):
-		self.assertEqual(Vigenere.rot('xyz',1), 'yza')
-		self.assertEqual(Vigenere.rot('x z',1), 'y a')
+		self.assertEqual(self.vigenereInstance.rot('xyz',1), 'yza')
+		self.assertEqual(self.vigenereInstance.rot('x z',1), 'y a')
 
 	def test_findKeyLength(self):
 		ciphertext = 'ulpkxwrjugccqdlbvkvinlctzevoknlycwqlytcrqbmyjaszdwwlmikzeglimkllcfimvezygmiapfwvjjbsalukezeayjxetwwxryzmckuidiaxglvbivpjucgcqeamrwsceuienxzfunzikiyvuevpgkahxkvwegwfgwbssnfqiznggvolmtfzcpivnwiwvhdpjmrmmmdshurlqnzuizvmwsnvyxwgslzjyalkjvxxatfceaszxsnzjrapuoidxgdmwyvwlllutjrntvyeomiwanpyeblahkzkztlsrpxppfnzxebtghrihvzflvkyltsnzjruzvyiigzjhnfbviazszixmckytowbswxzngqadcezwwqeukciullctngwxhokzvanayexiiyvyczgbcawrgivrahvzvqyygfyizyulpkxwrjugccqdzyrqmtjtujzhwyeukciullctvpbswiitevouidkybpjmtdivnwjivgbtuytmcxegaivtptuucbsztlbdnezpvyjdkvpvuijyvouidkybllcfietssluiiadsmjpqxeaienqivahxnykssfxjvqezgjcezolismiivahgmekeawvwciyquuqizdslpdxqdlbvjvmeawrgpgagmjdftplismiivkotceajknvhfceanznmvqwujdftpliujwwmquetovzohgmekeawrgqmlfmtmcxegffbczpdukzhbpubejpwrqbrnvitkyuvrcxtyijjtpyucdwafwmkcimwwwkmsvtuzijrbtwlwjyvosnzjrelkceqstgwxzieklkyzixppmhzoildlukzwesawylymdlcfiilhzykcizcwkldvqyymlntmnlyuxvqxahrgwbzhlfqmlplbvdvlpulpkxqzfevtwbzdunzrnzjwvhiveamligwyknzoybtghrgxppwzwvvofwxkcebezcjdwigaicvxqzfiwolmcaayosnygnszmvrxiixilegcexvqxahroiwywmvgjidycmzrqylbvamnezudzrlx'
-		self.assertEqual(Vigenere.findKeyLength(ciphertext, KEY_LENGTH_UPPER_BOUND), 14)  # Actually, the key length is 7, but refineKey catches this
+		self.assertEqual(self.vigenereInstance.findKeyLength(ciphertext, KEY_LENGTH_UPPER_BOUND), 14)  # Actually, the key length is 7, but refineKey catches this
 
 	def test_refineKey(self):
-		self.assertEqual(Vigenere.refineKey('lemonlemonlemon'), 'lemon')
-		self.assertEqual(Vigenere.refineKey('lemon'), 'lemon')
-		self.assertEqual(Vigenere.refineKey('lemonlemonorange'), 'lemonlemonorange')		
-		self.assertEqual(Vigenere.refineKey('aaaaaaaaaaa'), 'a')
+		self.assertEqual(self.vigenereInstance.refineKey('lemonlemonlemon'), 'lemon')
+		self.assertEqual(self.vigenereInstance.refineKey('lemon'), 'lemon')
+		self.assertEqual(self.vigenereInstance.refineKey('lemonlemonorange'), 'lemonlemonorange')		
+		self.assertEqual(self.vigenereInstance.refineKey('aaaaaaaaaaa'), 'a')
 
 	def test_crack(self):
 		ciphertext = 'ulpkxwrjugccqdlbvkvinlctzevoknlycwqlytcrqbmyjaszdwwlmikzeglimkllcfimvezygmiapfwvjjbsalukezeayjxetwwxryzmckuidiaxglvbivpjucgcqeamrwsceuienxzfunzikiyvuevpgkahxkvwegwfgwbssnfqiznggvolmtfzcpivnwiwvhdpjmrmmmdshurlqnzuizvmwsnvyxwgslzjyalkjvxxatfceaszxsnzjrapuoidxgdmwyvwlllutjrntvyeomiwanpyeblahkzkztlsrpxppfnzxebtghrihvzflvkyltsnzjruzvyiigzjhnfbviazszixmckytowbswxzngqadcezwwqeukciullctngwxhokzvanayexiiyvyczgbcawrgivrahvzvqyygfyizyulpkxwrjugccqdzyrqmtjtujzhwyeukciullctvpbswiitevouidkybpjmtdivnwjivgbtuytmcxegaivtptuucbsztlbdnezpvyjdkvpvuijyvouidkybllcfietssluiiadsmjpqxeaienqivahxnykssfxjvqezgjcezolismiivahgmekeawvwciyquuqizdslpdxqdlbvjvmeawrgpgagmjdftplismiivkotceajknvhfceanznmvqwujdftpliujwwmquetovzohgmekeawrgqmlfmtmcxegffbczpdukzhbpubejpwrqbrnvitkyuvrcxtyijjtpyucdwafwmkcimwwwkmsvtuzijrbtwlwjyvosnzjrelkceqstgwxzieklkyzixppmhzoildlukzwesawylymdlcfiilhzykcizcwkldvqyymlntmnlyuxvqxahrgwbzhlfqmlplbvdvlpulpkxqzfevtwbzdunzrnzjwvhiveamligwyknzoybtghrgxppwzwvvofwxkcebezcjdwigaicvxqzfiwolmcaayosnygnszmvrxiixilegcexvqxahroiwywmvgjidycmzrqylbvamnezudzrlx'
 		plaintext = 'cryptographyisthepracticeandstudyoftechniquesforsecurecommunicationinthepresenceofthirdpartiescalledadversariesmoregenerallyitisaboutconstructingandanalyzingprotocolsthatovercometheinfluenceofadversariesandwhicharerelatedtovariousaspectsininformationsecuritysuchasdataconfidentialitydataintegrityauthenticationandnonrepudiationmoderncryptographyintersectsthedisciplinesofmathematicscomputerscienceandelectricalengineeringmoderncryptographyisheavilybasedonmathematicaltheoryandcomputersciencepracticecryptographicalgorithmsaredesignedaroundcomputationalhardnessassumptionsmakingsuchalgorithmshardtobreakinpracticebyanyadversaryitistheoreticallypossibletobreaksuchasystembutitisinfeasibletodosobyanyknownpracticalmeanscryptologyrelatedtechnologyhasraisedanumberoflegalissuestheelectronicfrontierfoundationwasinvolvedinacaseintheunitedstateswhichquestionedwhetherrequiringsuspectedcriminalstoprovidetheirdecryptionkeystolawenforcementisunconstitutionaltheeffarguedthatthisisaviolationoftherightofnotbeingforcedtoincriminateoneselfasgiveninthefifthamendm'
 
-		(key, _) = Vigenere.crack(ciphertext)
-		maybePlaintext = Vigenere.decrypt(ciphertext, key)
+		(key, _) = self.vigenereInstance.crack(ciphertext)
+		maybePlaintext = self.vigenereInstance.decrypt(ciphertext, key)
 		self.assertEqual(plaintext, maybePlaintext)

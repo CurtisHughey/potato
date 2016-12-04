@@ -7,7 +7,7 @@ import fractions
 
 class Affine(cipher.AbstractBruteForceCipher):
 
-	def encrypt(plaintext, key):
+	def encrypt(self, plaintext, key):
 		(a,b) = key
 		ciphertext = ''
 
@@ -22,7 +22,7 @@ class Affine(cipher.AbstractBruteForceCipher):
 
 		return ciphertext
 
-	def decrypt(ciphertext, key):
+	def decrypt(self, ciphertext, key):
 		(a,b) = key
 		plaintext = ''
 
@@ -37,18 +37,16 @@ class Affine(cipher.AbstractBruteForceCipher):
 
 		return plaintext	
 
-	def genKeys():  # Can't really unit test this effectively...
+	def genKeys(self):  # Can't really unit test this effectively...
 		for a in range(1, utils.ALPHABET_SIZE):
 			if fractions.gcd(a, utils.ALPHABET_SIZE) == 1:
 				for b in range(1, utils.ALPHABET_SIZE):
 					yield (a,b)	
 
-	
-	def crack(ciphertext):
-		return cipher.AbstractBruteForceCipher.bruteForce(Affine, ciphertext)
-	
+	def crack(self, ciphertext):
+		return super().bruteForce(ciphertext)
 
-	def getNameOfCipher(key=None):
+	def getNameOfCipher(self, key=None):
 		if key == None:
 			return 'Affine'
 
@@ -63,49 +61,52 @@ class Affine(cipher.AbstractBruteForceCipher):
 		else:
 			return 'Affine'
 
-	def usage():
+	def usage(self):
 		print('Key is in the form (a,b), where 1<=a<utils.ALPHABET_SIZE,')
 		print('0<=b<utils.ALPHABET_SIZE, and gcd(a, utils.ALPHABET_SIZE=1')
 
 
 class AffineTest(unittest.TestCase):
 
+	def setUp(self):
+		self.affineInstance = Affine()
+
 	def test_encrypt(self):
-		self.assertEqual(Affine.encrypt('abc', (1,1)), 'bcd')
-		self.assertEqual(Affine.encrypt('xyz', (1,1)), 'yza')
-		self.assertEqual(Affine.encrypt('aBc', (1,1)), 'bBd')
-		self.assertEqual(Affine.encrypt('affine cipher', (5,8)), 'ihhwvc swfrcp')
+		self.assertEqual(self.affineInstance.encrypt('abc', (1,1)), 'bcd')
+		self.assertEqual(self.affineInstance.encrypt('xyz', (1,1)), 'yza')
+		self.assertEqual(self.affineInstance.encrypt('aBc', (1,1)), 'bBd')
+		self.assertEqual(self.affineInstance.encrypt('affine cipher', (5,8)), 'ihhwvc swfrcp')
 
 	def test_decrypt(self):
-		self.assertEqual(Affine.decrypt('bcd', (1,1)), 'abc')
-		self.assertEqual(Affine.decrypt('bBd', (1,1)), 'aBc')
-		self.assertEqual(Affine.decrypt('ihhwvc swfrcp', (5,8)), 'affine cipher')
+		self.assertEqual(self.affineInstance.decrypt('bcd', (1,1)), 'abc')
+		self.assertEqual(self.affineInstance.decrypt('bBd', (1,1)), 'aBc')
+		self.assertEqual(self.affineInstance.decrypt('ihhwvc swfrcp', (5,8)), 'affine cipher')
 
 	def test_identity(self):
-		self.assertEqual(Affine.encrypt(Affine.decrypt('random text hi there! zzz', (7,13)), (7,13)), 'random text hi there! zzz')
-		self.assertEqual(Affine.encrypt(Affine.decrypt('random text hi there! zzz', (7,13)), (7,13)), 'random text hi there! zzz')
+		self.assertEqual(self.affineInstance.encrypt(self.affineInstance.decrypt('random text hi there! zzz', (7,13)), (7,13)), 'random text hi there! zzz')
+		self.assertEqual(self.affineInstance.encrypt(self.affineInstance.decrypt('random text hi there! zzz', (7,13)), (7,13)), 'random text hi there! zzz')
 
 	def test_crack(self):
 		# Regular Affine
 		ciphertext = 'lrekmepqocpcboygywppehfiwpfzyqgdzergypwfywecyojeqcmyegfgypwfcymjyfgfmfgwpqgdzergpgffzeyciedbcgpfehfbefferqcpjeepqrodfexfwcpowpewlyetercbxgllerepfqgdzerfehfbefferyxedepxgpswpgfydwygfgwpgpfzeieyycse'
 		plaintext = 'frequencyanalysisonnextmonthscipherisnotsoeasybecauseitisnotasubstitutioncipherinitthesameplaintextlettercanbeencryptedtoanyoneofseveraldifferentciphertextlettersdependingonitspositioninthemessage'
-		(key, _) = Affine.crack(ciphertext)
-		maybePlaintext = Affine.decrypt(ciphertext, key)
+		(key, _) = self.affineInstance.crack(ciphertext)
+		maybePlaintext = self.affineInstance.decrypt(ciphertext, key)
 		self.assertEqual(key, (7,2))
 		self.assertEqual(plaintext, maybePlaintext)
 
 		# Caesar text
 		ciphertext = 'qeb nrfzh yoltk clu grjmp lsbo qeb ixwv ald'
 		plaintext = 'the quick brown fox jumps over the lazy dog'
-		(key, _) = Affine.crack(ciphertext)
-		maybePlaintext = Affine.decrypt(ciphertext, key)
+		(key, _) = self.affineInstance.crack(ciphertext)
+		maybePlaintext = self.affineInstance.decrypt(ciphertext, key)
 		self.assertEqual(key, (1,23))		
 		self.assertEqual(plaintext, maybePlaintext)
 
 		# Atbash text
 		ciphertext = 'gsv jfrxp yildm ulc qfnkh levi gsv ozab wlt'
 		plaintext = 'the quick brown fox jumps over the lazy dog'
-		(key, _) = Affine.crack(ciphertext)
-		maybePlaintext = Affine.decrypt(ciphertext, key)
+		(key, _) = self.affineInstance.crack(ciphertext)
+		maybePlaintext = self.affineInstance.decrypt(ciphertext, key)
 		self.assertEqual(key, (utils.ALPHABET_SIZE-1,utils.ALPHABET_SIZE-1))				
 		self.assertEqual(plaintext, maybePlaintext)

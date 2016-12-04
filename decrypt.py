@@ -26,7 +26,7 @@ ciphers = [
 def main(argv):
     ciphertext = ''
 
-    if (len(argv) < 1):
+    if (len(argv) < 2):
         usage()
         sys.exit(2)
 
@@ -58,12 +58,15 @@ def findCipherAndDecrypt(ciphertext):
     bestCipher = None
     bestKey = None
 
-    print('Type of Cipher     | Key             | Chi-Squared Value')
-    print('--------------------------------------------------------')
+    print('Decrypting %s' % ciphertext)
+
+    print('-------------------------------------------------------------------')
+    print('Type of Cipher                | Key             | Chi-Squared Value')
+    print('-------------------------------------------------------------------')
 
     for cipher in ciphers:
         key, chi2 = cipher.crack(ciphertext)
-        print('%-19s| %-16s| %.4f' % (cipher.getNameOfCipher(key), str(key), chi2))
+        print('%-30s| %-16s| %.4f' % (cipher.getNameOfCipher(key), str(key), chi2))
 
         if (chi2 <= lowestChi2):
             lowestChi2 = chi2

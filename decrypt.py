@@ -75,9 +75,9 @@ def findCipherAndDecrypt(ciphertext):
 
     print('\n')
 
-    plaintext = cipher.decrypt(ciphertext, key)
+    plaintext = bestCipher.decrypt(ciphertext, key)
     print('----------')
-    print('Best cipher was: %s' % cipher.getNameOfCipher(key))
+    print('Best cipher was: %s' % bestCipher.getNameOfCipher(key))
     print('Decrypted text:')
     print(plaintext)
 

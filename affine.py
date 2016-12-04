@@ -5,7 +5,7 @@ import cipher
 import unittest
 import fractions
 
-class Affine(cipher.AbstractCipher):
+class Affine(cipher.AbstractBruteForceCipher):
 
 	def encrypt(plaintext, key):
 		(a,b) = key
@@ -35,24 +35,18 @@ class Affine(cipher.AbstractCipher):
 			else:
 				plaintext += c
 
-		return plaintext		
+		return plaintext	
 
-	def crack(ciphertext):
-		key = (1,1)
-		lowestChi2 = 100000  # Just a big number 
-
+	def genKeys():
 		for a in range(1, utils.ALPHABET_SIZE):
 			if fractions.gcd(a, utils.ALPHABET_SIZE) == 1:
 				for b in range(1, utils.ALPHABET_SIZE):
-					maybePlaintext = Affine.decrypt(ciphertext,(a,b))
-					chi2 = utils.calcChiSquared(maybePlaintext)
+					yield (a,b)	
 
-					if chi2 < lowestChi2:
-						key = (a,b)
-						lowestChi2 = chi2
-
-
-		return (key, lowestChi2)
+	
+	def crack(ciphertext):
+		return cipher.AbstractBruteForceCipher.bruteForce(Affine, ciphertext)
+	
 
 	def getNameOfCipher(key=None):
 		if key == None:
@@ -115,3 +109,4 @@ class AffineTest(unittest.TestCase):
 		maybePlaintext = Affine.decrypt(ciphertext, key)
 		self.assertEqual(key, (utils.ALPHABET_SIZE-1,utils.ALPHABET_SIZE-1))				
 		self.assertEqual(plaintext, maybePlaintext)
+		

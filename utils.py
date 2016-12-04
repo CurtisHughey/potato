@@ -10,7 +10,7 @@ from scipy.stats import chisqprob
 
 ALPHABET_SIZE = 26
 
-# text must be lower case (otherwise ignored!
+# text must be lower case (otherwise ignored!)
 def rot(text, shift):
     shiftedText = ""
 

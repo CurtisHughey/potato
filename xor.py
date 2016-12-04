@@ -27,7 +27,7 @@ class Xor(stream.Stream):
 	def crack(self, ciphertext):
 		return super().bruteForce(ciphertext)  # can I define this method at higher level?...
 
-	def getNameOfCipher(self):
+	def getNameOfCipher(self, key=None):
 		return "XOR (Stream)"
 
 	def usage(self):

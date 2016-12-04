@@ -23,7 +23,7 @@ ciphers = [
             nothing.Nothing()
           , affine.Affine()
           , vigenere.Vigenere()
-          #, xor.Xor
+          #, xor.Xor()  # Ok, I have a real problem.  If it can xor such that none of the characters are valid, then really low chi...
           ] 
 
 def main(argv):

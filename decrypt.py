@@ -6,7 +6,7 @@
 # Playfair
 # Monoalphabetic
 # Transposition
-# Substitution
+# Substitution (use hill-climbing)
 
 
 import sys
@@ -23,7 +23,7 @@ ciphers = [
             nothing.Nothing()
           , affine.Affine()
           , vigenere.Vigenere()
-          #, xor.Xor()  # Ok, I have a real problem.  If it can xor such that none of the characters are valid, then really low chi...
+          , xor.Xor()  # Ok, I have a real problem.  If it can xor such that none of the characters are valid, then really low chi...
           ] 
 
 def main(argv):
@@ -67,7 +67,11 @@ def findCipherAndDecrypt(ciphertext):
     print('------------------------------------------------------------------------')
 
     for cipher in ciphers:
-        key, chi2 = cipher.crack(ciphertext)
+        processedCiphertext = ciphertext
+        if cipher.onlyLowerCase:  # Can't handle both lower and upper
+            processedCiphertext = processedCiphertext.lower()
+
+        key, chi2 = cipher.crack(processedCiphertext)
         print('%-30s| %-21s| %.4f' % (cipher.getNameOfCipher(key), str(key), chi2))
 
         if (chi2 < lowestChi2):
@@ -77,7 +81,11 @@ def findCipherAndDecrypt(ciphertext):
 
     print('\n')
 
-    plaintext = bestCipher.decrypt(ciphertext, bestKey)
+    processedCiphertext = ciphertext
+    if cipher.onlyLowerCase:  # Can't handle both lower and upper
+        processedCiphertext = processedCiphertext.lower()
+
+    plaintext = bestCipher.decrypt(processedCiphertext, bestKey)
     print('----------')
     print('Best cipher was: %s' % bestCipher.getNameOfCipher(bestKey))
     print('Decrypted text:')

@@ -22,3 +22,8 @@ class Stream(cipher.AbstractBruteForceCipher):
 	@abstractmethod
 	def prf(self, state):
 		"""Takes the current state and spits out a byte and the modified state"""
+
+	# For these schemes, anything goes
+	def onlyLowerCase(self):
+		return False
+

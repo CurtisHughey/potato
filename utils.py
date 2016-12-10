@@ -7,8 +7,12 @@ import unittest
 import scipy
 from scipy.stats import chisquare
 from scipy.stats import chisqprob
+from math import log10
+import string
 
 ALPHABET_SIZE = 26
+
+_trigraphFreqData = None
 
 # text must be lower case (otherwise ignored!)
 def rot(text, shift):
@@ -26,8 +30,12 @@ def rot(text, shift):
 
     return shiftedText
 
+# Should really be called isLowerAlpha
 def isAlpha(c):
-    return ord('a') <= ord(c) <= ord('z')
+    return ord('a') <= ord(c) <= ord('z')  # call tolower at somepoint for stream^^^^
+
+def isPrintable(c):
+    return c in string.printable  # But I eventually might want to do unicode...
 
 def calcFreqs(text):
     counts = defaultdict(int)
@@ -104,6 +112,60 @@ def multInverse(a, n):
         t = t+n
 
     return t
+
+# Wih thanks to Practical Cryptography for the file: http://practicalcryptography.com/cryptanalysis/letter-frequencies-various-languages/english-letter-frequencies/
+# Note that we need to convert to lower-case and to freqs
+# Also, you need to check to see if your trigraph is a key (wouldn't be added if freq is 0)
+def readTrigraphFreqs(filename):
+    global _trigraphFreqData
+
+    if _trigraphFreqData != None:
+        return _trigraphFreqData  # We're kind of caching it
+
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+
+        total = 0
+        counts = dict()
+
+        for line in lines:
+            split = line.split()
+            trigraph = split[0].lower()
+            count = int(split[1])
+            counts[trigraph] = count
+            total += count
+
+        freqs = dict()
+        lowera = ord('a')
+        for trigraph, count in counts.items():
+            freqs[trigraph] = count / total
+
+        _trigraphFreqData = (freqs, total)  # Saving for later as well
+
+        return (freqs, total)
+
+def calcTrigraphFitness(text):
+    text = text.lower()  # Upper case characters should be allowed
+
+    (freqs, total) = readTrigraphFreqs('data/english_trigrams.txt')
+
+    # Now, we need to filter for only lower-case alphabet characters.  There could be some tweaking...
+    strippedText = ''.join([c for c in text if isAlpha(c)])
+
+    minLog = log10(0.01/total)  # We're basically giving a lower bound on the probability of a trigraph appearing
+    
+    fitness = 0
+    for i in range(0, len(strippedText)-2):  # Iterating through trigraphs in text
+        trigraph = strippedText[i:i+3]
+        freq = freqs.get(trigraph, 0)  # 0 if not in the freqs
+        if freq == 0:
+            fitness += minLog
+        else:
+            fitness += log10(freq)
+
+    return fitness/len(strippedText)  # We divide by the length to allow us to compare different text sizes...
+
+
 
 class UtilTest(unittest.TestCase):
     def test_isAlpha(self):

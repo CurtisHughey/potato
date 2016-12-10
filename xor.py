@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
-from abc import abstractmethod
+import binascii
 import utils
 import cipher
 import unittest
 import stream
 
 class Xor(stream.Stream):
+
+	minReadRate = 0.3  # Eh, this should be good enough
 
 	def encrypt(self, plaintext, key):
 		state = self.initState(key)
@@ -25,7 +27,7 @@ class Xor(stream.Stream):
 		return range(256)
 
 	def crack(self, ciphertext):
-		return super().bruteForce(ciphertext)  # can I define this method at higher level?...
+		return super().bruteForce(ciphertext, self.minReadRate)  # can I define this method at higher level?...
 
 	def getNameOfCipher(self, key=None):
 		return "XOR (Stream)"
